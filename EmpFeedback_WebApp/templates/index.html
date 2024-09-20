@@ -1,0 +1,144 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Employee Feedback</title>
+     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+ </head>
+ <body>
+ 
+     <div style="width: 70%; margin: auto;">
+         <h1 style="text-align: center;">Employee Feedback</h1>
+     
+         <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+             <h2>View Feedback</h2>
+             <button style="height: fit-content;" id="add-feedback-btn" >Add Feedback</button>
+         </div>
+
+         <form id="view-feedback-form">
+            <label for="employee">Select Employee:</label>
+            <select id="employee" name="employee">
+                <!-- Filled by js script  -->
+            </select>
+            <button type="submit">View Feedback</button>
+        </form>
+                 
+ 
+         <div id="add-feedback" class="hide-add-feedback">
+             <h2>Add Feedback</h2>
+             <form action="/add_feedback" method="post">
+                 <label for="employee_name">Employee Name:</label>
+                 <select id="employee_name" name="employee_name">
+                    <!-- Filled by js script  -->
+                </select><br>
+                 <label for="level">Level:</label>
+                 <select id="level" name="level">
+                     <option value="Level 1">Level 1</option>
+                     <option value="Level 2">Level 2</option>
+                     <option value="Level 3">Level 3</option>
+                     <option value="Level 3">Level 4</option>
+                     <option value="Level 3">Level 5</option>
+                     <option value="Level 3">Level 6</option>
+                     <option value="Level 3">Level 7</option>
+                     <option value="Level 3">Level 8</option>
+                 </select><br>
+                 <label for="job_title">Job Title:</label>
+                 <select id="job_title" name="job_title">
+                     <option value="Assistant Managing Director">Assistant Managing Director</option>
+                     <option value="Vice President">Vice President</option>
+                     <option value="Manager">Manager</option>
+                     <option value="Senior Engineer">Senior Engineer</option>
+                     <option value="Junior Engineer">Junior Engineer</option>
+                     <option value="Intern">Intern</option>
+                 </select><br>
+                 <label for="function_code">Function Code:</label>
+                 <select id="function_code" name="function_code">
+                     <option value="IR">IR</option>
+                     <option value="CS">CS</option>
+                     <option value="GPE">GPE</option>
+                     <option value="IS">IS</option>
+                 </select><br>
+                 <label for="question1">1. Please provide a few examples of this individuals’ greatest achievements and/or contributions this year from your perspective.</label>
+                 <textarea id="question1" name="question1" required></textarea><br>
+                 <label for="question2">2. How has this individual demonstrated CustomerOrg's cultural values, according to the Career Framework? Please provide a few examples.</label>
+                 <textarea id="question2" name="question2" required></textarea><br>
+                 <label for="question3">3. What skills or capabilities can this individual build or expand upon that would allow the individual to contribute even more value in the future?</label>
+                 <textarea id="question3" name="question3" required></textarea><br>
+                 <label for="question4">4. What skills should this individual focus on developing in the future to progress to the next level (if applicable)? Please refer to the Career Framework to review the expected results and behaviors at the next level.</label>
+                 <textarea id="question4" name="question4" required></textarea><br>
+                 <button type="submit">Add Feedback</button>
+             </form>
+         </div>
+     
+ 
+         <div id="view-feedback" class="hide-add-feedback">
+             <h2>Feedbacks</h2>
+             <h3 id="feedback-for"></h3>
+             <div id="feedbacks"></div>
+         </div>
+         
+     </div>
+     
+ 
+     <script>
+         document.addEventListener('DOMContentLoaded', function() {
+             fetch('/employees')
+                 .then(response => response.json())
+                 .then(data => {
+                     const employeeSelects = document.querySelectorAll('select[name="employee"], select[name="employee_name"]');
+                     employeeSelects.forEach(select => {
+                         select.innerHTML = '';
+                         data.employees.forEach(employee => {
+                             const option = document.createElement('option');
+                             option.value = employee;
+                             option.textContent = employee;
+                             select.appendChild(option);
+                         });
+                     });
+                 });
+         });
+ 
+         document.getElementById('view-feedback-form').addEventListener('submit', function(event) {
+             event.preventDefault();
+ 
+             const viewFeedback = document.getElementById("view-feedback");
+             document.getElementById("add-feedback").style.display = 'none';
+ 
+             viewFeedback.style.display = 'block';
+             
+             document.getElementById('feedback-for').innerText = `Feedback given for - ${document.getElementById('employee').value}`;
+ 
+             const employee = document.getElementById('employee').value;
+             fetch(`/feedback/${encodeURIComponent(employee)}`)
+                 .then(response => response.json())
+                 .then(data => {
+                     const feedbacksDiv = document.getElementById('feedbacks');
+                     feedbacksDiv.innerHTML = '';
+                     data.feedbacks.forEach(feedback => {
+                         const feedbackItem = document.createElement('div');
+                         feedbackItem.classList.add('feedback-item');
+                         feedbackItem.innerHTML = `
+                             <strong>Level:</strong> ${feedback.level} <br>
+                             <strong>Job Title:</strong> ${feedback.job_title} <br>
+                             <strong>Function Code:</strong> ${feedback.function_code} <br>
+                             <strong>1. Please provide a few examples of this individuals’ greatest achievements and/or contributions this year from your perspective.</strong> </br>${feedback.question1} <br>
+                             <strong>2. How has this individual demonstrated CustomerOrg's cultural values, according to the Career Framework? Please provide a few examples.</strong> </br>${feedback.question2} <br>
+                             <strong>3. What skills or capabilities can this individual build or expand upon that would allow the individual to contribute even more value in the future?</strong> </br>${feedback.question3} <br>
+                             <strong>4. What skills should this individual focus on developing in the future to progress to the next level (if applicable)? Please refer to the Career Framework to review the expected results and behaviors at the next level.</strong> </br>${feedback.question4} <br>
+                         `;
+                         feedbacksDiv.appendChild(feedbackItem);
+                     });
+                 });
+         });
+ 
+         
+         document.getElementById('add-feedback-btn').addEventListener('click', function(event) { 
+             event.preventDefault();
+             document.getElementById("add-feedback").style.display = 'block';
+             document.getElementById("view-feedback").style.display = 'none';
+         });
+         
+     </script>
+ </body>
+ </html>
