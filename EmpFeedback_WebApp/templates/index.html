@@ -1,144 +1,121 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Employee Feedback</title>
-     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
- </head>
- <body>
- 
-     <div style="width: 70%; margin: auto;">
-         <h1 style="text-align: center;">Employee Feedback</h1>
-     
-         <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-             <h2>View Feedback</h2>
-             <button style="height: fit-content;" id="add-feedback-btn" >Add Feedback</button>
-         </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Feedback</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
 
-         <form id="view-feedback-form">
+    <div class="container">
+        <!-- Dropdown to select Employee -->
+        <div class="employee-selection">
             <label for="employee">Select Employee:</label>
             <select id="employee" name="employee">
                 <!-- Filled by js script  -->
             </select>
-            <button type="submit">View Feedback</button>
-        </form>
-                 
- 
-         <div id="add-feedback" class="hide-add-feedback">
-             <h2>Add Feedback</h2>
-             <form action="/add_feedback" method="post">
-                 <label for="employee_name">Employee Name:</label>
-                 <select id="employee_name" name="employee_name">
-                    <!-- Filled by js script  -->
-                </select><br>
-                 <label for="level">Level:</label>
-                 <select id="level" name="level">
-                     <option value="Level 1">Level 1</option>
-                     <option value="Level 2">Level 2</option>
-                     <option value="Level 3">Level 3</option>
-                     <option value="Level 3">Level 4</option>
-                     <option value="Level 3">Level 5</option>
-                     <option value="Level 3">Level 6</option>
-                     <option value="Level 3">Level 7</option>
-                     <option value="Level 3">Level 8</option>
-                 </select><br>
-                 <label for="job_title">Job Title:</label>
-                 <select id="job_title" name="job_title">
-                     <option value="Assistant Managing Director">Assistant Managing Director</option>
-                     <option value="Vice President">Vice President</option>
-                     <option value="Manager">Manager</option>
-                     <option value="Senior Engineer">Senior Engineer</option>
-                     <option value="Junior Engineer">Junior Engineer</option>
-                     <option value="Intern">Intern</option>
-                 </select><br>
-                 <label for="function_code">Function Code:</label>
-                 <select id="function_code" name="function_code">
-                     <option value="IR">IR</option>
-                     <option value="CS">CS</option>
-                     <option value="GPE">GPE</option>
-                     <option value="IS">IS</option>
-                 </select><br>
-                 <label for="question1">1. Please provide a few examples of this individuals’ greatest achievements and/or contributions this year from your perspective.</label>
-                 <textarea id="question1" name="question1" required></textarea><br>
-                 <label for="question2">2. How has this individual demonstrated CustomerOrg's cultural values, according to the Career Framework? Please provide a few examples.</label>
-                 <textarea id="question2" name="question2" required></textarea><br>
-                 <label for="question3">3. What skills or capabilities can this individual build or expand upon that would allow the individual to contribute even more value in the future?</label>
-                 <textarea id="question3" name="question3" required></textarea><br>
-                 <label for="question4">4. What skills should this individual focus on developing in the future to progress to the next level (if applicable)? Please refer to the Career Framework to review the expected results and behaviors at the next level.</label>
-                 <textarea id="question4" name="question4" required></textarea><br>
-                 <button type="submit">Add Feedback</button>
-             </form>
-         </div>
-     
- 
-         <div id="view-feedback" class="hide-add-feedback">
-             <h2>Feedbacks</h2>
-             <h3 id="feedback-for"></h3>
-             <div id="feedbacks"></div>
-         </div>
-         
-     </div>
-     
- 
-     <script>
-         document.addEventListener('DOMContentLoaded', function() {
-             fetch('/employees')
-                 .then(response => response.json())
-                 .then(data => {
-                     const employeeSelects = document.querySelectorAll('select[name="employee"], select[name="employee_name"]');
-                     employeeSelects.forEach(select => {
-                         select.innerHTML = '';
-                         data.employees.forEach(employee => {
-                             const option = document.createElement('option');
-                             option.value = employee;
-                             option.textContent = employee;
-                             select.appendChild(option);
-                         });
-                     });
-                 });
-         });
- 
-         document.getElementById('view-feedback-form').addEventListener('submit', function(event) {
-             event.preventDefault();
- 
-             const viewFeedback = document.getElementById("view-feedback");
-             document.getElementById("add-feedback").style.display = 'none';
- 
-             viewFeedback.style.display = 'block';
-             
-             document.getElementById('feedback-for').innerText = `Feedback given for - ${document.getElementById('employee').value}`;
- 
-             const employee = document.getElementById('employee').value;
-             fetch(`/feedback/${encodeURIComponent(employee)}`)
-                 .then(response => response.json())
-                 .then(data => {
-                     const feedbacksDiv = document.getElementById('feedbacks');
-                     feedbacksDiv.innerHTML = '';
-                     data.feedbacks.forEach(feedback => {
-                         const feedbackItem = document.createElement('div');
-                         feedbackItem.classList.add('feedback-item');
-                         feedbackItem.innerHTML = `
-                             <strong>Level:</strong> ${feedback.level} <br>
-                             <strong>Job Title:</strong> ${feedback.job_title} <br>
-                             <strong>Function Code:</strong> ${feedback.function_code} <br>
-                             <strong>1. Please provide a few examples of this individuals’ greatest achievements and/or contributions this year from your perspective.</strong> </br>${feedback.question1} <br>
-                             <strong>2. How has this individual demonstrated CustomerOrg's cultural values, according to the Career Framework? Please provide a few examples.</strong> </br>${feedback.question2} <br>
-                             <strong>3. What skills or capabilities can this individual build or expand upon that would allow the individual to contribute even more value in the future?</strong> </br>${feedback.question3} <br>
-                             <strong>4. What skills should this individual focus on developing in the future to progress to the next level (if applicable)? Please refer to the Career Framework to review the expected results and behaviors at the next level.</strong> </br>${feedback.question4} <br>
-                         `;
-                         feedbacksDiv.appendChild(feedbackItem);
-                     });
-                 });
-         });
- 
-         
-         document.getElementById('add-feedback-btn').addEventListener('click', function(event) { 
-             event.preventDefault();
-             document.getElementById("add-feedback").style.display = 'block';
-             document.getElementById("view-feedback").style.display = 'none';
-         });
-         
-     </script>
- </body>
- </html>
+            <button type="submit" class="btn-primary" id="view-feedback-btn">View Feedback</button>
+        </div>
+
+        <div class="content-section">
+            <!-- Left Section: Employee Details -->
+            <div class="employee-details-card">
+                <h2>Employee Details</h2>
+                <div id="employee-details" class="employee-details">
+                    <!-- Employee details will be populated here -->
+                    <img src="https://api.dicebear.com/9.x/notionists/svg" class="proPic" alt="Employee Profile Picture">
+
+                    <p><strong>Name:</strong> <span id="employee-name"></span></p>
+                    <p><strong>Level:</strong> <span id="employee-level"></span></p>
+                    <p><strong>Function Code:</strong> <span id="employee-function"></span></p>
+                    <p><strong>Job Title:</strong> <span id="employee-job"></span></p>
+                </div>
+            </div>
+
+            <!-- Right Section: Feedbacks -->
+            <div class="feedback-section">
+                <h2>Feedbacks</h2>
+                <div id="feedbacks" class="feedbacks-container">
+                    <!-- Questions and feedbacks will be populated here -->
+                    <div class="feedback-block">
+                        <h3>1. Please provide a few examples of this individual's greatest achievements and/or contributions this year from your perspective.</h3>
+                        <div id="feedback-question1" class="feedback-list">
+                            <!-- Feedbacks for question 1 -->
+                        </div>
+                    </div>
+                    
+                    <div class="feedback-block">
+                        <h3>2. How has this individual demonstrated CustomerOrg's cultural values, according to the Career Framework? Please provide a few examples.</h3>
+                        <div id="feedback-question2" class="feedback-list">
+                            <!-- Feedbacks for question 2 -->
+                        </div>
+                    </div>
+
+                    <div class="feedback-block">
+                        <h3>3. What skills or capabilities can this individual build or expand upon that would allow the individual to contribute even more value in the future?</h3>
+                        <div id="feedback-question3" class="feedback-list">
+                            <!-- Feedbacks for question 3 -->
+                        </div>
+                    </div>
+
+                    <div class="feedback-block">
+                        <h3>4. What skills should this individual focus on developing in the future to progress to the next level (if applicable)?</h3>
+                        <div id="feedback-question4" class="feedback-list">
+                            <!-- Feedbacks for question 4 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/employees')
+                .then(response => response.json())
+                .then(data => {
+                    const employeeSelect = document.getElementById('employee');
+                    employeeSelect.innerHTML = '';
+                    data.employees.forEach(employee => {
+                        const option = document.createElement('option');
+                        option.value = employee;
+                        option.textContent = employee;
+                        employeeSelect.appendChild(option);
+                    });
+                });
+        });
+
+        document.getElementById('view-feedback-btn').addEventListener('click', function() {
+            const selectedEmployee = document.getElementById('employee').value;
+
+            // Fetch employee details
+            fetch(`/employee_details/${encodeURIComponent(selectedEmployee)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('employee-name').innerText = data.name;
+                    document.getElementById('employee-level').innerText = data.level;
+                    document.getElementById('employee-function').innerText = data.function_code;
+                    document.getElementById('employee-job').innerText = data.job_title;
+                });
+
+            // Fetch feedbacks
+            fetch(`/feedback/${encodeURIComponent(selectedEmployee)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('feedback-question1').innerHTML = '';
+                    document.getElementById('feedback-question2').innerHTML = '';
+                    document.getElementById('feedback-question3').innerHTML = '';
+                    document.getElementById('feedback-question4').innerHTML = '';
+
+                    data.feedbacks.forEach(feedback => {
+                        document.getElementById('feedback-question1').innerHTML += `<p>${feedback.question1}</p>`;
+                        document.getElementById('feedback-question2').innerHTML += `<p>${feedback.question2}</p>`;
+                        document.getElementById('feedback-question3').innerHTML += `<p>${feedback.question3}</p>`;
+                        document.getElementById('feedback-question4').innerHTML += `<p>${feedback.question4}</p>`;
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

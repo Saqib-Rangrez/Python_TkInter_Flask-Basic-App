@@ -16,6 +16,7 @@ df = load_feedback_data()
 
 @app.route('/')
 def index():
+    
     return render_template('index.html')
 
 @app.route('/employees', methods=['GET'])
@@ -23,6 +24,18 @@ def get_employees():
     feedbacks = load_feedback_data()
     employees = feedbacks['subject'].unique().tolist()
     return jsonify({'employees': employees})
+
+@app.route('/employee_details/<employee_name>', methods=['GET'])
+def get_employee_details(employee_name):
+    feedbacks = load_feedback_data()
+    employee_details = feedbacks[feedbacks['subject'] == employee_name].iloc[0]  # Get first occurrence of employee
+    details = {
+        'name': employee_details['subject'],
+        'level': employee_details['level'],
+        'function_code': employee_details['function_code'],
+        'job_title': employee_details['job_title']
+    }
+    return jsonify(details)
 
 @app.route('/feedback/<employee_name>', methods=['GET'])
 def get_feedback(employee_name):
